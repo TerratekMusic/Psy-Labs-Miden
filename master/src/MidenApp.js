@@ -151,11 +151,18 @@ const MidenApp = () => {
 
     try {
       setLoading(true);
-      await client.send_tokens(accountId, recipientAddress, 50); // Adjust based on actual method
+      await client.new_send_transaction(
+        accountId,
+        recipientAddress,
+        faucetId,
+        "Private",
+        50
+      ); // Adjust based on actual method
       setStatus(`Sent 50 tokens from ${accountId} to ${recipientAddress}`);
       setLoading(false);
     } catch (error) {
       setStatus(`Error sending tokens: ${error.message}`);
+      setLoading(false);
     }
   };
 

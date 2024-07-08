@@ -1,7 +1,7 @@
 // src/MidenApp.js
 import React, { useState, useEffect } from "react";
 import { WebClient } from "@demox-labs/miden-sdk";
-import { Button, Flex, Heading } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Spinner, Text } from "@chakra-ui/react";
 
 const MidenApp = () => {
   const [client, setClient] = useState(null);
@@ -9,6 +9,7 @@ const MidenApp = () => {
   const [faucetId, setFaucetId] = useState(null);
   const [accountInfo, setAccountInfo] = useState(null);
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const initializeClient = async () => {
@@ -48,9 +49,13 @@ const MidenApp = () => {
     }
 
     try {
+      setLoading(true);
+
       const newAccountId = await client.new_wallet("OffChain", true);
       setAccountId(newAccountId);
       setStatus(`Account created: ${newAccountId}`);
+
+      setLoading(false);
     } catch (error) {
       setStatus(`Error creating account: ${error.message}`);
     }
@@ -61,8 +66,10 @@ const MidenApp = () => {
       setStatus("Web client is not initialized.");
       return;
     }
+    setLoading(true);
 
     try {
+      setLoading(true);
       const faucetId = await client.new_faucet(
         "OffChain",
         false,
@@ -71,7 +78,9 @@ const MidenApp = () => {
         "1000000"
       );
       setFaucetId(faucetId);
+
       setStatus(`Faucet created: ${faucetId}`);
+      setLoading(false);
     } catch (error) {
       setStatus(`Error creating faucet: ${error.message}`);
     }
@@ -84,6 +93,7 @@ const MidenApp = () => {
     }
 
     try {
+      setLoading(true);
       setStatus("Syncing state...");
       await client.sync_state();
 
@@ -102,6 +112,8 @@ const MidenApp = () => {
 
       // await client.new_consume_transaction(accountId, notes);
       // setStatus(`Note consumed for account: ${accountId}`);
+
+      setLoading(false);
     } catch (error) {
       setStatus(`Error minting tokens: ${error.message}`);
     }
@@ -112,10 +124,14 @@ const MidenApp = () => {
       setStatus("Web client is not initialized.");
       return;
     }
+    setLoading(true);
 
     try {
+      setLoading(true);
       await client.sync_state();
       setStatus("State synchronized.");
+      setLoading(false);
+      setLoading(false);
     } catch (error) {
       setStatus(`Error syncing state: ${error.message}`);
     }
@@ -134,17 +150,36 @@ const MidenApp = () => {
     }
 
     try {
+      setLoading(true);
       await client.send_tokens(accountId, recipientAddress, 50); // Adjust based on actual method
       setStatus(`Sent 50 tokens from ${accountId} to ${recipientAddress}`);
+      setLoading(false);
     } catch (error) {
       setStatus(`Error sending tokens: ${error.message}`);
     }
   };
 
+  console.log("accountId", accountId);
+
   return (
     <div>
-      <Flex>
-        <Heading alignSelf="center">Miden Client App</Heading>
+      <Flex justify="space-around" mb="5rem">
+        <Heading alignSelf="center">Miden ZkFunding</Heading>
+      </Flex>
+
+      <Flex justify="space-around">
+        {loading && (
+          <Box>
+            <Spinner
+              thickness="4px"
+              speed="0.65s"
+              emptyColor="gray.200"
+              color="blue.500"
+              size="xl"
+            />
+            <Text>Loading</Text>
+          </Box>
+        )}
       </Flex>
 
       <Flex>
@@ -163,6 +198,10 @@ const MidenApp = () => {
         <Button m="1rem" onClick={sendTokens}>
           Send Tokens
         </Button>
+      </Flex>
+
+      <Flex>
+        <Text>Account: {accountId ? accountId : " No account found"}</Text>
       </Flex>
 
       <p>Status: {status}</p>

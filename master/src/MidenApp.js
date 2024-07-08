@@ -10,6 +10,9 @@ const MidenApp = () => {
   const [accountInfo, setAccountInfo] = useState(null);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+
+  const candidate1 = "0xaddce0a4f2a74682";
 
   useEffect(() => {
     const initializeClient = async () => {
@@ -101,7 +104,12 @@ const MidenApp = () => {
       await client.fetch_and_cache_account_auth_by_pub_key(faucetId);
 
       setStatus("Minting tokens...");
-      await client.new_mint_transaction(accountId, faucetId, "Public", "10000");
+      await client.new_mint_transaction(
+        selectedCandidate,
+        faucetId,
+        "Public",
+        "10000"
+      );
 
       setStatus("Syncing state again...");
       await client.sync_state();
@@ -165,14 +173,21 @@ const MidenApp = () => {
       setLoading(false);
     }
   };
+  const handleElection = () => {
+    setSelectedCandidate(candidate1);
+  };
 
   console.log("accountId", accountId);
+  console.log("candidate", selectedCandidate);
 
   return (
     <div>
       <Flex justify="space-around" mb="5rem">
         <Heading alignSelf="center">Miden ZkFunding</Heading>
       </Flex>
+      <Box>
+        <Button onClick={handleElection}>Select Candidate 1</Button>
+      </Box>
 
       <Flex justify="space-around">
         {loading && (
@@ -207,8 +222,9 @@ const MidenApp = () => {
         </Button>
       </Flex>
 
-      <Flex>
+      <Flex flexDir="column">
         <Text>Account: {accountId ? accountId : " No account found"}</Text>
+        <Text>You are voting for: {selectedCandidate}</Text>
       </Flex>
 
       <p>Status: {status}</p>

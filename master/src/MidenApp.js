@@ -1,22 +1,23 @@
 // src/MidenApp.js
-import React, { useState, useEffect } from 'react';
-import { WebClient } from '@demox-labs/miden-sdk';
+import React, { useState, useEffect } from "react";
+import { WebClient } from "@demox-labs/miden-sdk";
+import { Button, Flex, Heading } from "@chakra-ui/react";
 
 const MidenApp = () => {
   const [client, setClient] = useState(null);
   const [accountId, setAccountId] = useState(null);
   const [faucetId, setFaucetId] = useState(null);
   const [accountInfo, setAccountInfo] = useState(null);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const initializeClient = async () => {
       try {
         const webClient = new WebClient();
-        const remote_node_url = "http://18.203.155.106:57291"
+        const remote_node_url = "http://18.203.155.106:57291";
         await webClient.create_client(remote_node_url);
         setClient(webClient);
-        setStatus('Web client initialized');
+        setStatus("Web client initialized");
       } catch (error) {
         setStatus(`Error initializing client: ${error.message}`);
       }
@@ -42,12 +43,12 @@ const MidenApp = () => {
 
   const createAccount = async () => {
     if (!client) {
-      setStatus('Web client is not initialized.');
+      setStatus("Web client is not initialized.");
       return;
     }
 
     try {
-      const newAccountId = await client.new_wallet('OffChain', true);
+      const newAccountId = await client.new_wallet("OffChain", true);
       setAccountId(newAccountId);
       setStatus(`Account created: ${newAccountId}`);
     } catch (error) {
@@ -57,12 +58,18 @@ const MidenApp = () => {
 
   const createFaucet = async () => {
     if (!client) {
-      setStatus('Web client is not initialized.');
+      setStatus("Web client is not initialized.");
       return;
     }
 
     try {
-      const faucetId = await client.new_faucet('OffChain', false, 'TOK', '6', '1000000');
+      const faucetId = await client.new_faucet(
+        "OffChain",
+        false,
+        "TOK",
+        "6",
+        "1000000"
+      );
       setFaucetId(faucetId);
       setStatus(`Faucet created: ${faucetId}`);
     } catch (error) {
@@ -72,21 +79,21 @@ const MidenApp = () => {
 
   const mintTokens = async () => {
     if (!client || !accountId || !faucetId) {
-      setStatus('Create an account and a faucet first.');
+      setStatus("Create an account and a faucet first.");
       return;
     }
 
     try {
-      setStatus('Syncing state...');
+      setStatus("Syncing state...");
       await client.sync_state();
 
-      setStatus('Fetching and caching account auth...');
+      setStatus("Fetching and caching account auth...");
       await client.fetch_and_cache_account_auth_by_pub_key(faucetId);
 
-      setStatus('Minting tokens...');
-      await client.new_mint_transaction(accountId, faucetId, 'Public', '10000');
+      setStatus("Minting tokens...");
+      await client.new_mint_transaction(accountId, faucetId, "Public", "10000");
 
-      setStatus('Syncing state again...');
+      setStatus("Syncing state again...");
       await client.sync_state();
       setStatus(`Minted 10,000 tokens for account: ${accountId}`);
 
@@ -102,13 +109,13 @@ const MidenApp = () => {
 
   const syncState = async () => {
     if (!client) {
-      setStatus('Web client is not initialized.');
+      setStatus("Web client is not initialized.");
       return;
     }
 
     try {
       await client.sync_state();
-      setStatus('State synchronized.');
+      setStatus("State synchronized.");
     } catch (error) {
       setStatus(`Error syncing state: ${error.message}`);
     }
@@ -116,13 +123,13 @@ const MidenApp = () => {
 
   const sendTokens = async () => {
     if (!client || !accountId) {
-      setStatus('Create an account first.');
+      setStatus("Create an account first.");
       return;
     }
 
-    const recipientAddress = prompt('Enter the recipient address:');
+    const recipientAddress = prompt("Enter the recipient address:");
     if (!recipientAddress) {
-      setStatus('Recipient address is required.');
+      setStatus("Recipient address is required.");
       return;
     }
 
@@ -136,12 +143,28 @@ const MidenApp = () => {
 
   return (
     <div>
-      <h1>Miden Client App</h1>
-      <button onClick={createAccount}>Create Account</button>
-      <button onClick={createFaucet}>Create Faucet</button>
-      <button onClick={mintTokens}>Mint Tokens</button>
-      <button onClick={syncState}>Sync State</button>
-      <button onClick={sendTokens}>Send Tokens</button>
+      <Flex>
+        <Heading alignSelf="center">Miden Client App</Heading>
+      </Flex>
+
+      <Flex>
+        <Button m="1rem" onClick={createAccount}>
+          Create Account
+        </Button>
+        <Button m="1rem" onClick={createFaucet}>
+          Create Faucet
+        </Button>
+        <Button m="1rem" onClick={mintTokens}>
+          Mint Tokens
+        </Button>
+        <Button m="1rem" onClick={syncState}>
+          Sync State
+        </Button>
+        <Button m="1rem" onClick={sendTokens}>
+          Send Tokens
+        </Button>
+      </Flex>
+
       <p>Status: {status}</p>
       {accountInfo && (
         <div>

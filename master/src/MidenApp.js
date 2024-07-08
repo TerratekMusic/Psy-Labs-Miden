@@ -107,7 +107,7 @@ const MidenApp = () => {
       await client.new_mint_transaction(
         selectedCandidate,
         faucetId,
-        "Public",
+        "Private",
         "10000"
       );
 
@@ -179,6 +179,7 @@ const MidenApp = () => {
 
   console.log("accountId", accountId);
   console.log("candidate", selectedCandidate);
+  console.log("mintObject: ", mintTokens);
 
   return (
     <div>

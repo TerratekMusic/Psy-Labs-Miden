@@ -11,6 +11,7 @@ const MidenApp = () => {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [mintObject, setMintObject] = useState(null);
 
   const candidate1 = "0xaddce0a4f2a74682";
 
@@ -50,6 +51,7 @@ const MidenApp = () => {
       setStatus("Web client is not initialized.");
       return;
     }
+    setLoading(true);
 
     try {
       setLoading(true);
@@ -65,14 +67,15 @@ const MidenApp = () => {
   };
 
   const createFaucet = async () => {
-    if (!client) {
-      setStatus("Web client is not initialized.");
-      return;
-    }
     setLoading(true);
 
+    if (!client) {
+      setStatus("Web client is not initialized.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      setLoading(true);
       const faucetId = await client.new_faucet(
         "OffChain",
         false,
@@ -86,6 +89,7 @@ const MidenApp = () => {
       setLoading(false);
     } catch (error) {
       setStatus(`Error creating faucet: ${error.message}`);
+      setLoading(false);
     }
   };
 
@@ -104,7 +108,7 @@ const MidenApp = () => {
       await client.fetch_and_cache_account_auth_by_pub_key(faucetId);
 
       setStatus("Minting tokens...");
-      await client.new_mint_transaction(
+      const result = await client.new_mint_transaction(
         selectedCandidate,
         faucetId,
         "Private",
@@ -114,16 +118,19 @@ const MidenApp = () => {
       setStatus("Syncing state again...");
       await client.sync_state();
       setStatus(`Minted 10,000 tokens for account: ${accountId}`);
+      setMintObject(result);
+      console.log("mint result: ", result);
+      setLoading(false);
+      return result;
 
       // const notes = await client.get_input_notes(accountId);
       // setStatus(`Notes: ${notes}`);
 
       // await client.new_consume_transaction(accountId, notes);
       // setStatus(`Note consumed for account: ${accountId}`);
-
-      setLoading(false);
     } catch (error) {
       setStatus(`Error minting tokens: ${error.message}`);
+      setLoading(false);
     }
   };
 
@@ -179,7 +186,7 @@ const MidenApp = () => {
 
   console.log("accountId", accountId);
   console.log("candidate", selectedCandidate);
-  console.log("mintObject: ", mintTokens);
+  console.log("mintObject: ", mintObject);
 
   return (
     <div>

@@ -244,17 +244,25 @@ const MidenApp = () => {
 
   return (
     <div>
-      <Flex bgImage={bg} bgSize="cover" justify="space-around" mb="5rem">
+      <Flex
+        h="15rem"
+        bgImage={bg}
+        bgSize="cover"
+        justify="space-around"
+        mb="5rem"
+      >
         <Heading color="white" alignSelf="center">
           Miden ZkVoting
         </Heading>
       </Flex>
-      <Box>
-        <Button onClick={selectCandidate1}>Select Candidate 1</Button>
-        <Button ml="1rem" onClick={selectCandidate2}>
+      <Flex mb="4rem" justify="space-around">
+        <Button color="white" bgColor="blue" onClick={selectCandidate1}>
           Select Candidate 1
         </Button>
-      </Box>
+        <Button color="white" bgColor="red" onClick={selectCandidate2}>
+          Select Candidate 1
+        </Button>
+      </Flex>
 
       <Flex justify="space-around">
         {loading && (
@@ -293,18 +301,21 @@ const MidenApp = () => {
         </Button>
       </Flex>
 
-      <Flex flexDir="column">
+      <Flex ml="4rem" flexDir="column">
         <Text>Account: {accountId ? accountId : " No account found"}</Text>
+
         <Text>You are voting for: {selectedCandidate}</Text>
       </Flex>
 
-      <p>Status: {status}</p>
-      {accountInfo && (
-        <div>
-          <h2>Account Info</h2>
-          <pre>{JSON.stringify(accountInfo, null, 2)}</pre>
-        </div>
-      )}
+      <Box ml="4rem">
+        <p>Status: {status}</p>
+        {accountInfo && (
+          <div>
+            <h2>Account Info</h2>
+            <pre>{JSON.stringify(accountInfo, null, 2)}</pre>
+          </div>
+        )}
+      </Box>
     </div>
   );
 };

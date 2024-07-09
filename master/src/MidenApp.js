@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { WebClient } from "@demox-labs/miden-sdk";
 import { Box, Button, Flex, Heading, Spinner, Text } from "@chakra-ui/react";
+import bg from "./img/bg1.jpg";
 
 const MidenApp = () => {
   const [client, setClient] = useState(null);
@@ -12,6 +13,7 @@ const MidenApp = () => {
   const [loading, setLoading] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [mintObject, setMintObject] = useState(null);
+  const [notes, setNotes] = useState(null);
 
   const candidate1 = "0xaddce0a4f2a74682";
 
@@ -52,6 +54,7 @@ const MidenApp = () => {
       return;
     }
     setLoading(true);
+    console.log("creating account");
 
     try {
       setLoading(true);
@@ -119,6 +122,7 @@ const MidenApp = () => {
       await client.sync_state();
       setStatus(`Minted 10,000 tokens for account: ${accountId}`);
       setMintObject(result);
+      // setNotes(mintObject.created_note_ids);
       console.log("mint result: ", result);
       setLoading(false);
       return result;
@@ -130,6 +134,40 @@ const MidenApp = () => {
       // setStatus(`Note consumed for account: ${accountId}`);
     } catch (error) {
       setStatus(`Error minting tokens: ${error.message}`);
+      setLoading(false);
+    }
+  };
+  const consumeTransaction = async () => {
+    // if (!client || !accountId || !mintObject) {
+    //   setStatus("Mint Tokens first");
+    //   return;
+    // }
+
+    try {
+      setLoading(true);
+      setStatus("Syncing state...");
+      await client.sync_state();
+
+      setStatus("Consuming transactions...");
+      const tx = await client.new_consume_transaction("0x91c20ac9388fef80", [
+        "0x25c06f02a90052c7754df7e4744f4b28ce1754b7ad927c0a8815ffd87a8d9f11",
+      ]);
+
+      setStatus("Syncing state again...");
+      await client.sync_state();
+
+      setStatus(`Consumed TX  for account: ${selectedCandidate}`);
+
+      console.log("tx: ", tx);
+      setLoading(false);
+
+      // const notes = await client.get_input_notes(accountId);
+      // setStatus(`Notes: ${notes}`);
+
+      // await client.new_consume_transaction(accountId, notes);
+      // setStatus(`Note consumed for account: ${accountId}`);
+    } catch (error) {
+      setStatus(`Error consuming transaction tokens: ${error.message}`);
       setLoading(false);
     }
   };
@@ -152,34 +190,34 @@ const MidenApp = () => {
     }
   };
 
-  const sendTokens = async () => {
-    if (!client || !accountId) {
-      setStatus("Create an account first.");
-      return;
-    }
+  // const sendTokens = async () => {
+  //   if (!client || !accountId) {
+  //     setStatus("Create an account first.");
+  //     return;
+  //   }
 
-    const recipientAddress = prompt("Enter the recipient address:");
-    if (!recipientAddress) {
-      setStatus("Recipient address is required.");
-      return;
-    }
+  //   const recipientAddress = prompt("Enter the recipient address:");
+  //   if (!recipientAddress) {
+  //     setStatus("Recipient address is required.");
+  //     return;
+  //   }
 
-    try {
-      setLoading(true);
-      await client.new_send_transaction(
-        accountId,
-        recipientAddress,
-        faucetId,
-        "Private",
-        50
-      ); // Adjust based on actual method
-      setStatus(`Sent 50 tokens from ${accountId} to ${recipientAddress}`);
-      setLoading(false);
-    } catch (error) {
-      setStatus(`Error sending tokens: ${error.message}`);
-      setLoading(false);
-    }
-  };
+  //   try {
+  //     setLoading(true);
+  //     await client.new_send_transaction(
+  //       accountId,
+  //       recipientAddress,
+  //       faucetId,
+  //       "Private",
+  //       50
+  //     ); // Adjust based on actual method
+  //     setStatus(`Sent 50 tokens from ${accountId} to ${recipientAddress}`);
+  //     setLoading(false);
+  //   } catch (error) {
+  //     setStatus(`Error sending tokens: ${error.message}`);
+  //     setLoading(false);
+  //   }
+  // };
   const handleElection = () => {
     setSelectedCandidate(candidate1);
   };
@@ -188,10 +226,15 @@ const MidenApp = () => {
   console.log("candidate", selectedCandidate);
   console.log("mintObject: ", mintObject);
 
+  // console.log("notes from object: ", mintObject.created_note_ids);
+  console.log("notes from state: ", notes);
+
   return (
     <div>
-      <Flex justify="space-around" mb="5rem">
-        <Heading alignSelf="center">Miden ZkFunding</Heading>
+      <Flex bgImage={bg} bgSize="cover" justify="space-around" mb="5rem">
+        <Heading color="white" alignSelf="center">
+          Miden ZkFunding
+        </Heading>
       </Flex>
       <Box>
         <Button onClick={handleElection}>Select Candidate 1</Button>
@@ -225,7 +268,7 @@ const MidenApp = () => {
         <Button m="1rem" onClick={syncState}>
           Sync State
         </Button>
-        <Button m="1rem" onClick={sendTokens}>
+        <Button m="1rem" onClick={consumeTransaction}>
           Send Tokens
         </Button>
       </Flex>

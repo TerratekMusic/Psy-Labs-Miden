@@ -112,7 +112,7 @@ const MidenApp = () => {
 
       setStatus("Minting tokens...");
       const result = await client.new_mint_transaction(
-        selectedCandidate,
+        accountId,
         faucetId,
         "Private",
         "10000"
@@ -122,7 +122,10 @@ const MidenApp = () => {
       await client.sync_state();
       setStatus(`Minted 10,000 tokens for account: ${accountId}`);
       setMintObject(result);
-      // setNotes(mintObject.created_note_ids);
+      if (!mintObject) {
+        setNotes(mintObject.created_note_ids);
+      }
+
       console.log("mint result: ", result);
       setLoading(false);
       return result;
@@ -146,17 +149,21 @@ const MidenApp = () => {
     try {
       setLoading(true);
       setStatus("Syncing state...");
-      await client.sync_state();
+      // await client.sync_state();
+
+      await client.fetch_and_cache_account_auth_by_pub_key(
+        "0x9e1a72fcadaf2c10"
+      );
 
       setStatus("Consuming transactions...");
-      const tx = await client.new_consume_transaction("0x91c20ac9388fef80", [
-        "0x25c06f02a90052c7754df7e4744f4b28ce1754b7ad927c0a8815ffd87a8d9f11",
+      const tx = await client.new_consume_transaction("0x9e1a72fcadaf2c10", [
+        "0x100bfd2489a9ea994b6392d1236503922eb320944e1f21804935e85d8b63b3a0",
       ]);
 
       setStatus("Syncing state again...");
-      await client.sync_state();
+      // await client.sync_state();
 
-      setStatus(`Consumed TX  for account: ${selectedCandidate}`);
+      setStatus(`Consumed TX  for account: ${"0x9e1a72fcadaf2c10"}`);
 
       console.log("tx: ", tx);
       setLoading(false);

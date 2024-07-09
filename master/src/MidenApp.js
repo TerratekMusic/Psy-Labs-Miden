@@ -15,7 +15,8 @@ const MidenApp = () => {
   const [mintObject, setMintObject] = useState(null);
   const [notes, setNotes] = useState(null);
 
-  const candidate1 = "0xaddce0a4f2a74682";
+  const candidate1 = "0x9e1a72fcadaf2c10";
+  const candidate2 = "0x9ed2cfe63f05f25b";
 
   useEffect(() => {
     const initializeClient = async () => {
@@ -82,7 +83,7 @@ const MidenApp = () => {
       const faucetId = await client.new_faucet(
         "OffChain",
         false,
-        "TOK",
+        "VOTE",
         "6",
         "1000000"
       );
@@ -112,7 +113,7 @@ const MidenApp = () => {
 
       setStatus("Minting tokens...");
       const result = await client.new_mint_transaction(
-        accountId,
+        selectedCandidate,
         faucetId,
         "Private",
         "10000"
@@ -120,11 +121,8 @@ const MidenApp = () => {
 
       setStatus("Syncing state again...");
       await client.sync_state();
-      setStatus(`Minted 10,000 tokens for account: ${accountId}`);
+      setStatus(`Minted 1 vote for candidate: ${selectedCandidate}`);
       setMintObject(result);
-      if (!mintObject) {
-        setNotes(mintObject.created_note_ids);
-      }
 
       console.log("mint result: ", result);
       setLoading(false);
@@ -151,19 +149,15 @@ const MidenApp = () => {
       setStatus("Syncing state...");
       // await client.sync_state();
 
-      await client.fetch_and_cache_account_auth_by_pub_key(
-        "0x9e1a72fcadaf2c10"
-      );
+      await client.fetch_and_cache_account_auth_by_pub_key(selectedCandidate);
 
       setStatus("Consuming transactions...");
-      const tx = await client.new_consume_transaction("0x9e1a72fcadaf2c10", [
-        "0x100bfd2489a9ea994b6392d1236503922eb320944e1f21804935e85d8b63b3a0",
-      ]);
+      const tx = await client.new_consume_transaction(selectedCandidate, notes);
 
       setStatus("Syncing state again...");
       // await client.sync_state();
 
-      setStatus(`Consumed TX  for account: ${"0x9e1a72fcadaf2c10"}`);
+      setStatus(`Consumed Votes for account: ${selectedCandidate}`);
 
       console.log("tx: ", tx);
       setLoading(false);
@@ -176,6 +170,15 @@ const MidenApp = () => {
     } catch (error) {
       setStatus(`Error consuming transaction tokens: ${error.message}`);
       setLoading(false);
+    }
+  };
+
+  const getNotes = async () => {
+    if (mintObject) {
+      setNotes(mintObject.created_note_ids);
+      console.log("notes ", notes);
+    } else {
+      setStatus("No vote tokens found");
     }
   };
 
@@ -225,8 +228,11 @@ const MidenApp = () => {
   //     setLoading(false);
   //   }
   // };
-  const handleElection = () => {
+  const selectCandidate1 = () => {
     setSelectedCandidate(candidate1);
+  };
+  const selectCandidate2 = () => {
+    setSelectedCandidate(candidate2);
   };
 
   console.log("accountId", accountId);
@@ -240,11 +246,14 @@ const MidenApp = () => {
     <div>
       <Flex bgImage={bg} bgSize="cover" justify="space-around" mb="5rem">
         <Heading color="white" alignSelf="center">
-          Miden ZkFunding
+          Miden ZkVoting
         </Heading>
       </Flex>
       <Box>
-        <Button onClick={handleElection}>Select Candidate 1</Button>
+        <Button onClick={selectCandidate1}>Select Candidate 1</Button>
+        <Button ml="1rem" onClick={selectCandidate2}>
+          Select Candidate 1
+        </Button>
       </Box>
 
       <Flex justify="space-around">
@@ -275,8 +284,12 @@ const MidenApp = () => {
         <Button m="1rem" onClick={syncState}>
           Sync State
         </Button>
+        <Button m="1rem" onClick={getNotes}>
+          Get Notes
+        </Button>
+
         <Button m="1rem" onClick={consumeTransaction}>
-          Send Tokens
+          Vote
         </Button>
       </Flex>
 
